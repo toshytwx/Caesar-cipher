@@ -18,24 +18,25 @@ public class MyForm extends JDialog {
     private JSpinner keyValue;
     private JComboBox comboBox;
     private JFileChooser jFileChooser;
-    private Controller controller;
 
     public MyForm(Controller controller) {
-        this.controller = controller;
-
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(openFileButton);
 
         openFileButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                onOpenFile();
+                jFileChooser = new JFileChooser();
+                String output = controller.onOpenFile(jFileChooser);
+                textArea.setText(output);
             }
         });
 
         buttonSaveAs.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                onSaveAS();
+                jFileChooser = new JFileChooser();
+                String input = textArea.getText();
+                controller.onSaveFile(jFileChooser, input);
             }
         });
 
@@ -43,7 +44,7 @@ public class MyForm extends JDialog {
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                onCancel();
+                dispose();
             }
         });
 
@@ -65,14 +66,14 @@ public class MyForm extends JDialog {
         // call onCancel() on ESCAPE
         contentPane.registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                onCancel();
+                dispose();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
 
         exitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                onExit();
+                dispose();
             }
         });
 
@@ -100,47 +101,6 @@ public class MyForm extends JDialog {
 
     private void onAbout() {
         JOptionPane.showMessageDialog(this, "Developed by: Antonkin Dmytro TM-51", "About", JOptionPane.PLAIN_MESSAGE);
-    }
-
-
-    private void onExit() {
-        dispose();
-    }
-
-    private void onSaveAS() {
-        jFileChooser = new JFileChooser();
-        int res = jFileChooser.showDialog(null, "Save file");
-        if (res == JFileChooser.APPROVE_OPTION) {
-            File file = jFileChooser.getSelectedFile();
-            jFileChooser.setSelectedFile(file);
-            try (BufferedWriter writer = new BufferedWriter((new FileWriter(file)))) {
-                writer.write(textArea.getText());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void onOpenFile() {
-        jFileChooser = new JFileChooser();
-        StringBuilder sb = new StringBuilder();
-        int res = jFileChooser.showDialog(null, "Open file");
-        if (res == JFileChooser.APPROVE_OPTION) {
-            File file = jFileChooser.getSelectedFile();
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                int c;
-                while ((c = reader.read()) != -1) {
-                    sb.append((char) c);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            textArea.setText(sb.toString());
-        }
-    }
-
-    private void onCancel() {
-        dispose();
     }
 
 }
